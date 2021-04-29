@@ -112,6 +112,9 @@ public class IntList {
             C = C.rest;
             A = A.rest;
         }
+        if (B == null){
+            return D;
+        }
         C.rest = new IntList (B.first, null); // Start to copy B's elements
         C = C.rest;
         B = B.rest;
