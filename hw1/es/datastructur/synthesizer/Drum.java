@@ -1,9 +1,7 @@
 package es.datastructur.synthesizer;
 
-//Note: This file will not compile until you complete task 1 (BoundedQueue).
-public class GuitarString {
-    /** Constants. Do not change. In case you're curious, the keyword final
-     * means the values cannot be changed at runtime. */
+public class Drum {
+
     private static final int SR = 44100;      // Sampling Rate
     private static final double DECAY = .996; // energy decay factor
 
@@ -11,7 +9,7 @@ public class GuitarString {
     private BoundedQueue<Double> buffer;
 
     /* Create a guitar string of the given frequency.  */
-    public GuitarString(double frequency) {
+    public Drum(double frequency) {
         // TODO: Create a buffer with capacity = SR / frequency. You'll need to
         //       cast the result of this division operation into an int. For
         //       better accuracy, use the Math.round() function before casting.
@@ -49,8 +47,13 @@ public class GuitarString {
 
         double r1 = buffer.dequeue();
         double r2 = buffer.peek();
-        double newDouble = 0.996 * 0.5 * (r1 + r2);
-        buffer.enqueue(newDouble);
+        double newDouble = 1.0 * 0.5 * (r1 + r2);
+        double chance = Math.random();
+        if (chance > 0.5) {
+            buffer.enqueue((0 - newDouble));
+        } else {
+            buffer.enqueue(newDouble);
+        }
 
     }
 
@@ -61,4 +64,4 @@ public class GuitarString {
         return front;
     }
 }
-    // TODO: Remove all comments that say TODO when you're done.
+
