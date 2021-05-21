@@ -2,7 +2,7 @@ package hw2;
 
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
-public class Percolation {
+public class PercolationNoBackWash {
 
     private int TOP;
     private int BOTTOM;
@@ -11,7 +11,7 @@ public class Percolation {
     WeightedQuickUnionUF wquf;
 
     // create N-by-N grid, with all sites initially blocked
-    public Percolation(int N) {
+    public PercolationNoBackWash(int N) {
         if (N <= 0) {
             throw new java.lang.IllegalArgumentException("Grid size has to be a positive number.");
         }
@@ -30,6 +30,17 @@ public class Percolation {
         return row * (grid.length) + col;
     }
 
+    //check if a cell is connected to TOP through the stored value
+    private boolean connectToTop(int row, int col) {
+        int value = (Math.floorDiv(grid[row][col], 10)) % 10;
+        return value == 1;
+    }
+
+    //check if a cell is connected to BOTTOM through the stored value
+    private boolean connectToBottom(int row, int col) {
+        int value = grid[row][col] % 10;
+        return value == 1;
+    }
 
     // helper method to connect a cell to its surrounding cell if any is open
     private void orthoConnect(int row, int col) {
@@ -47,6 +58,12 @@ public class Percolation {
                 if (isOpen(g[0], g[1])) {
                     // if the surrounding cell is open, connect with center cell
                     wquf.union(center, xyTo1D(g[0], g[1]));
+                    if (connectToTop(g[0], g[1]) && (!connectToTop(row, col))){
+                        grid[row][col] += 10;
+                    }
+                    if (connectToBottom(g[0], g[1]) && (!connectToBottom(row, col))){
+                        grid[row][col] += 1;
+                    }
 
                 }
             }
@@ -61,7 +78,7 @@ public class Percolation {
             throw new java.lang.IndexOutOfBoundsException("coordinate out of range");
         }
         if(!isOpen(row, col)) {
-            grid[row][col] = 1;
+            grid[row][col] = 100;
             orthoConnect(row, col);
             openSize += 1;
         }
