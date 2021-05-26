@@ -2,35 +2,36 @@ package hw2;
 
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
-public class Percolation {
+public class PercolationNoBackWash2 {
 
-    private int TOP;
-    private int BOTTOM;
+    private boolean[] ConnectToTop;
+    private boolean[] ConnectToBottom;
     private int[][] grid;
     private int openSize = 0;
     WeightedQuickUnionUF wquf;
-    WeightedQuickUnionUF wqufTop;
+    private boolean PercolationFlag;
 
     // create N-by-N grid, with all sites initially blocked
-    public Percolation(int N) {
+    public PercolationNoBackWash2(int N) {
         if (N <= 0) {
             throw new java.lang.IllegalArgumentException("Grid size has to be a positive number.");
         }
         this.grid = new int[N][N];
-        this.wquf = new WeightedQuickUnionUF(N*N+2);
-        this.wqufTop = new WeightedQuickUnionUF(N*N+1);
-        TOP = N*N;
-        BOTTOM = N*N+1;
+        this.wquf = new WeightedQuickUnionUF(N*N+3);
+
+        ConnectToTop = new boolean[N*N];
+        ConnectToBottom = new boolean[N*N];
         for (int i = 0; i < N; i++) {
-            wquf.union(TOP, xyTo1D(0, i));
-            wqufTop.union(TOP,xyTo1D(0, i));
-            wquf.union(BOTTOM, xyTo1D((N-1), i));
+
+            ConnectToTop[i] = true;
+            ConnectToBottom[N*N-1-i] = true;
         }
+
+        PercolationFlag = false;
     }
 
     // helper method to transfer coordinates to a number
     private int xyTo1D(int row, int col) {
-
         return row * (grid.length) + col;
     }
 
@@ -51,11 +52,27 @@ public class Percolation {
                 if (isOpen(g[0], g[1])) {
                     // if the surrounding cell is open, connect with center cell
                     wquf.union(center, xyTo1D(g[0], g[1]));
-                    wqufTop.union(center,xyTo1D(g[0], g[1]));
+                    if(ConnectToTop[xyTo1D(g[0], g[1])]) {
+                        ConnectToTop[center] = true;
+                    }
+                    if (ConnectToBottom[xyTo1D(g[0], g[1])]) {
+                        ConnectToBottom[center] = true;
+                    }
 
                 }
             }
         }
+        /*if (ConnectToTop[center]) {
+            for (int g[] : orthoGrid) {
+                if (g[0] >= 0 && g[0] < grid.length && g[1] >= 0 && g[1] < grid.length) {
+                    if (isOpen(g[0], g[1])) {
+                        // if the surrounding cell is open, connect with center cell
+                        ConnectToTop[xyTo1D(g[0], g[1])] = true;
+                    }
+                }
+            }
+
+        }*/
     }
 
     // open the site (row, col) if it is not open already
@@ -69,6 +86,9 @@ public class Percolation {
             grid[row][col] = 1;
             orthoConnect(row, col);
             openSize += 1;
+            if(ConnectToTop[wquf.find(xyTo1D(row, col))] && ConnectToBottom[xyTo1D(row, col)]) {
+                PercolationFlag = true;
+            }
         }
     }
 
@@ -90,7 +110,7 @@ public class Percolation {
         }
         int cell1D = xyTo1D(row, col);
 
-        if (isOpen(row,col) && wqufTop.connected(cell1D, TOP)) { // check if this site is connected to TOP
+        if (isOpen(row,col) && ConnectToTop[wquf.find(cell1D)]) { // check if this site is connected to TOP
             return true;
         }
         return false;
@@ -103,7 +123,7 @@ public class Percolation {
 
     // does the system percolate?
     public boolean percolates() {
-        if (wquf.connected(TOP, BOTTOM)) {
+        if (PercolationFlag) {
             return true;
         }
         return false;

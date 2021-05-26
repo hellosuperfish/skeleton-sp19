@@ -9,6 +9,7 @@ public class PercolationNoBackWash {
     private int[][] grid;
     private int openSize = 0;
     WeightedQuickUnionUF wquf;
+    WeightedQuickUnionUF wqufTop;
 
     // create N-by-N grid, with all sites initially blocked
     public PercolationNoBackWash(int N) {
@@ -17,30 +18,22 @@ public class PercolationNoBackWash {
         }
         this.grid = new int[N][N];
         this.wquf = new WeightedQuickUnionUF(N*N+2);
+        this.wqufTop = new WeightedQuickUnionUF(N*N+1);
         TOP = N*N;
         BOTTOM = N*N+1;
         for (int i = 0; i < N; i++) {
             wquf.union(TOP, xyTo1D(0, i));
+            wqufTop.union(TOP,xyTo1D(0, i));
             wquf.union(BOTTOM, xyTo1D((N-1), i));
         }
     }
 
     // helper method to transfer coordinates to a number
     private int xyTo1D(int row, int col) {
+
         return row * (grid.length) + col;
     }
 
-    //check if a cell is connected to TOP through the stored value
-    private boolean connectToTop(int row, int col) {
-        int value = (Math.floorDiv(grid[row][col], 10)) % 10;
-        return value == 1;
-    }
-
-    //check if a cell is connected to BOTTOM through the stored value
-    private boolean connectToBottom(int row, int col) {
-        int value = grid[row][col] % 10;
-        return value == 1;
-    }
 
     // helper method to connect a cell to its surrounding cell if any is open
     private void orthoConnect(int row, int col) {
@@ -58,12 +51,7 @@ public class PercolationNoBackWash {
                 if (isOpen(g[0], g[1])) {
                     // if the surrounding cell is open, connect with center cell
                     wquf.union(center, xyTo1D(g[0], g[1]));
-                    if (connectToTop(g[0], g[1]) && (!connectToTop(row, col))){
-                        grid[row][col] += 10;
-                    }
-                    if (connectToBottom(g[0], g[1]) && (!connectToBottom(row, col))){
-                        grid[row][col] += 1;
-                    }
+                    wqufTop.union(center,xyTo1D(g[0], g[1]));
 
                 }
             }
@@ -78,7 +66,7 @@ public class PercolationNoBackWash {
             throw new java.lang.IndexOutOfBoundsException("coordinate out of range");
         }
         if(!isOpen(row, col)) {
-            grid[row][col] = 100;
+            grid[row][col] = 1;
             orthoConnect(row, col);
             openSize += 1;
         }
@@ -102,7 +90,7 @@ public class PercolationNoBackWash {
         }
         int cell1D = xyTo1D(row, col);
 
-        if (isOpen(row,col) && wquf.connected(cell1D, TOP)) { // check if this site is connected to TOP
+        if (isOpen(row,col) && wqufTop.connected(cell1D, TOP)) { // check if this site is connected to TOP
             return true;
         }
         return false;
