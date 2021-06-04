@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Created by Jenny Huang on 3/12/19.
  */
-public class TestMyTrieSet {
+public class TestMyMyTrieSet {
 
     // assumes add/contains work
     @Test
@@ -14,6 +14,7 @@ public class TestMyTrieSet {
         for (int i = 0; i < 455; i++) {
             t.add("hi" + i);
             //make sure put is working via contains
+            t.contains("hi" + i);
             assertTrue(t.contains("hi" + i));
         }
         t.clear();
@@ -31,6 +32,18 @@ public class TestMyTrieSet {
         assertTrue(t.contains("waterYouDoingHere"));
     }
 
+    @Test
+    public void CollectTest() {
+        MyTrieSet t = new MyTrieSet();
+        for (int i = 0; i < 455; i++) {
+            t.add("hi" + i);
+        }
+        List<String> strings = t.collect();
+        //System.out.println(strings);
+        assertEquals(455, strings.size());
+    }
+
+
     // assumes add works
     @Test
     public void sanityPrefixTest() {
@@ -47,6 +60,7 @@ public class TestMyTrieSet {
 
         List<String> keys = t.keysWithPrefix("sa");
         for (String s: saStrings) {
+            //keys.contains(s);
             assertTrue(keys.contains(s));
         }
         for (String s: otherStrings) {
@@ -55,7 +69,7 @@ public class TestMyTrieSet {
     }
 
     public static void main(String[] args) {
-        jh61b.junit.TestRunner.runTests(TestMyTrieSet.class);
+        jh61b.junit.TestRunner.runTests(TestMyMyTrieSet.class);
     }
 
 
