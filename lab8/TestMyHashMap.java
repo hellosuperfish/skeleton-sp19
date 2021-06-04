@@ -28,11 +28,14 @@ public class TestMyHashMap {
             assertTrue(null != b.get("hi" + i)
                         && b.containsKey("hi" + i)); 
         }
+        //System.out.println(b.size());
         b.clear();
         assertEquals(0, b.size());
         for (int i = 0; i < 455; i++) {
+            b.get("hi" + i);
             assertTrue(null == b.get("hi" + i) && !b.containsKey("hi" + i));
         }
+
     }
 
     // assumes put works
@@ -66,7 +69,14 @@ public class TestMyHashMap {
         for (int i = 0; i < 455; i++) {
             b.put("hi" + i, 1);
         }
+        b.keySet();
         assertEquals(456, b.size());
+        //System.out.println(b.keySet());
+        //for(int i = 0; i < 455; i++) {
+          //  if (!b.keySet().contains("hi" + i)) {
+            //    System.out.println(i);
+            //}
+        //}
     }
 
     //assumes get/containskey work
