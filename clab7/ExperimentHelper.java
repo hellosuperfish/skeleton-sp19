@@ -1,3 +1,5 @@
+import edu.princeton.cs.algs4.StdRandom;
+
 /**
  * Created by hug.
  */
@@ -15,8 +17,17 @@ public class ExperimentHelper {
      *  N = 8, OIPL: 13
      */
     public static int optimalIPL(int N) {
-        return 0;
+        if (N <= 0) {
+            throw new IllegalArgumentException("N cannot be 0 or negative");
+        }
+        if (N == 1) {
+            return 0;
+        } else {
+            int num = (int)optimalAverageDepth(N);
+            return optimalIPL(N-1) + num;
+        }
     }
+
 
     /** Returns the average depth for nodes in an optimal BST of
      *  size N.
@@ -27,6 +38,42 @@ public class ExperimentHelper {
      * @return
      */
     public static double optimalAverageDepth(int N) {
-        return 0;
+        if (N <= 0) {
+            throw new IllegalArgumentException("N cannot be 0 or negative");
+        }
+        double a = Math.log(N);
+        double b = Math.log(2);
+        double c = a / b;
+
+        return c;
+    }
+
+    public static void randomInsert(BST tree, int max, int addSize) {
+        if (max < addSize) {
+            throw new IllegalArgumentException("max needs to be larger than treeSize to ensure unique insertion");
+        }
+        for (int i = 1; i <= addSize; i++) {
+            int rand = StdRandom.uniform(max);
+            while(tree.contains(rand)) { // make sure each random number is unique
+                rand = StdRandom.uniform(max);
+            }
+            tree.add(rand);
+        }
+    }
+
+    public static void DeleteTakingSuccessor(BST t) {
+        t.deleteTakingSuccessor(t.getRandomKey());
+    }
+
+    public static void DeleteTakingRandom(BST t) {
+        t.deleteTakingRandom(t.getRandomKey());
+    }
+
+
+    public static void main(String[] args){
+        for (int i = 1; i < 11; i++) {
+            System.out.println("N: " + i + ", OIPL: " + optimalIPL(i));
+
+        }
     }
 }

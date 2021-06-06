@@ -1,4 +1,7 @@
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /*  @author Josh Hug, with most code created by:
  *  @author Robert Sedgewick
@@ -6,6 +9,7 @@ import java.util.NoSuchElementException;
  */
 public class BST<Key extends Comparable<Key>> {
     /**
+
      * Initializes an empty BST.
      */
     public BST() {
@@ -60,12 +64,60 @@ public class BST<Key extends Comparable<Key>> {
         root = deleteTakingRandom(root, key);
     }
 
+    public Node getNode(Key k) {
+        return get(root, k);
+    }
+
+
+
+    private void keySetHelper(Node x, Set<Key> keys) {
+        if (x == null) {
+            return;
+        }
+        keySetHelper(x.left, keys);
+        if(!keys.contains(x.key)) {
+            keys.add(x.key);
+        }
+        keySetHelper(x.right, keys);
+
+    }
+
+    public Set<Key> keySet(){
+        Set<Key> keys = new HashSet<>();
+        keySetHelper(root, keys);
+        return keys;
+
+    }
 
     /** Returns a random item from the BST. */
     public Key getRandomKey() {
         return getRandomNode(root).key;
     }
 
+
+    public double avgDepth() {
+        Hashtable<Integer, Integer> numPerDepth = new Hashtable<>();
+        Set<Key> keys = keySet();
+        int totalDepth = 0;
+        for (Key key : keys) {
+            int depth = getDepth(key);
+            if (!numPerDepth.containsKey(depth)) {
+                numPerDepth.put(depth, 1);
+            } else {
+                int i = numPerDepth.get(depth);
+                numPerDepth.put(depth, i+1);
+            }
+        }
+        for (int depth : numPerDepth.keySet()) {
+            totalDepth += depth * numPerDepth.get(depth);
+        }
+        return ((double) totalDepth / size());
+    }
+
+    public int getDepth(Key k) {
+        int depth = getDepth(root, k, 0);
+        return depth;
+    }
 
     /** Private methods and variables follow. There's no need to read
      *  any of this.
@@ -186,6 +238,32 @@ public class BST<Key extends Comparable<Key>> {
         return x;
     }
 
+    private Node get(Node x, Key key) {
+        if (x == null) {
+            return null;
+        }
+        int cmp = key.compareTo(x.key);
+        if (cmp < 0) {
+            x.left  = get(x.left,  key);
+        } else if (cmp > 0) {
+            x.right = get(x.right, key);
+        }
+            return x;
+    }
+
+    private int getDepth(Node x, Key key, int d) {
+        if (getNode(key) == null) {
+            throw new IllegalArgumentException("key doesn't exist in tree");
+        }
+        int cmp = key.compareTo(x.key);
+        if (cmp < 0) {
+            return (getDepth(x.left, key, d+1));
+        } else if (cmp > 0) {
+            return (getDepth(x.right, key, d+1));
+        }
+        return d;
+    }
+
     /**
      * Removes the smallest key and associated value from the BST.
      *
@@ -227,7 +305,6 @@ public class BST<Key extends Comparable<Key>> {
         if (x == null) return 0;
         else return x.size;
     }
-
 
     private boolean contains(Node x, Key key) {
         if (key == null) throw new IllegalArgumentException("calls get() with a null key");
