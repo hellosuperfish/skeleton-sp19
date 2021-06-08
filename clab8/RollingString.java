@@ -1,3 +1,6 @@
+import java.util.ArrayDeque;
+import java.util.concurrent.ArrayBlockingQueue;
+
 /**
  * A String-like class that allows users to add and remove characters in the String
  * in constant time and have a constant-time hash function. Used for the Rabin-Karp
@@ -9,13 +12,17 @@ class RollingString{
      * Number of total possible int values a character can take on.
      * DO NOT CHANGE THIS.
      */
-    static final int UNIQUECHARS = 128;
+    static final int UNIQUECHARS = 128; // ASCII
 
     /**
      * The prime base that we are using as our mod space. Happens to be 61B. :)
      * DO NOT CHANGE THIS.
      */
     static final int PRIMEBASE = 6113;
+
+
+    private ArrayDeque<Character> ad;
+    private int len;
 
     /**
      * Initializes a RollingString with a current value of String s.
@@ -24,6 +31,12 @@ class RollingString{
     public RollingString(String s, int length) {
         assert(s.length() == length);
         /* FIX ME */
+        this.len = length;
+        ad = new ArrayDeque<>(length);
+        for (int i = 0; i < length; i++) {
+            ad.add(s.charAt(i));
+        }
+
     }
 
     /**
@@ -33,6 +46,9 @@ class RollingString{
      */
     public void addChar(char c) {
         /* FIX ME */
+        ad.addLast(c);
+        ad.remove();
+
     }
 
 
@@ -44,7 +60,10 @@ class RollingString{
     public String toString() {
         StringBuilder strb = new StringBuilder();
         /* FIX ME */
-        return "";
+        for(char c : ad) {
+            strb.append(c);
+        }
+        return strb.toString();
     }
 
     /**
@@ -53,7 +72,7 @@ class RollingString{
      */
     public int length() {
         /* FIX ME */
-        return -1;
+        return len;
     }
 
 
@@ -65,7 +84,26 @@ class RollingString{
     @Override
     public boolean equals(Object o) {
         /* FIX ME */
-        return false;
+        if (this == o) {
+            return true;
+        }
+        if (o.getClass() != this.getClass()) {
+            return false;
+        }
+        if (this.length() != ((RollingString)o).length()) {
+            return false;
+        }
+        if (this.hashCode() != ((RollingString)o).hashCode()) {
+            return false;
+        }
+        ArrayDeque<Character> adThis = ad.clone();
+        ArrayDeque<Character> adThat = ((RollingString)o).ad.clone();
+        while (adThis.size() != 0) {
+            if (adThis.poll() != adThat.poll()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -75,6 +113,10 @@ class RollingString{
     @Override
     public int hashCode() {
         /* FIX ME */
-        return -1;
+        int code = 0;
+        for (char c : ad) {
+            code = code * UNIQUECHARS + c;
+        }
+        return Math.floorMod(code, PRIMEBASE);
     }
 }

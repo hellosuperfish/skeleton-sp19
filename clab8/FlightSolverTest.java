@@ -28,6 +28,7 @@ public class FlightSolverTest {
         int[] endTimes = {19, 29, 39, 49};
         int[] passengerCounts = {1, 2, 3, 4};
         FlightSolver solver = new FlightSolver(makeFlights(startTimes, endTimes, passengerCounts));
+        //solver.solve();
         assertEquals(4, solver.solve());
     }
 
