@@ -14,6 +14,7 @@ public class SeparableEnemySolverTests {
         g.connect("A", "D");
         g.connect("C", "D");
         SeparableEnemySolver solver = new SeparableEnemySolver(g);
+        solver.isSeparable();
         assertEquals(false, solver.isSeparable());
     }
 
@@ -52,6 +53,7 @@ public class SeparableEnemySolverTests {
     @Test
     public void input3() throws FileNotFoundException {
         SeparableEnemySolver solver = new SeparableEnemySolver("input/party3");
+        solver.isSeparable();
         assertEquals(false, solver.isSeparable());
     }
 

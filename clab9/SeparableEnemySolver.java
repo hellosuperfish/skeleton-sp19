@@ -24,7 +24,31 @@ public class SeparableEnemySolver {
      */
     public boolean isSeparable() {
         // TODO: Fix me
-        return false;
+        HashSet<String> group1 = new HashSet<>();
+        HashSet<String> group2 = new HashSet<>();
+
+        for (String s : g.labels()) {
+            if (group1.contains(s)) {
+                for (String neighbor : g.neighbors(s)) {
+                    group2.add(neighbor);
+                }
+            } else if (group2.contains(s)) {
+                for (String neighbor : g.neighbors(s)) {
+                    group1.add(neighbor);
+                }
+            } else {
+                group1.add(s);
+                for (String neighbor : g.neighbors(s)) {
+                    group2.add(neighbor);
+                }
+            }
+        }
+        group1.retainAll(group2);
+        if (group1.size()>0) {
+            return false;
+        }
+
+        return true;
     }
 
 
