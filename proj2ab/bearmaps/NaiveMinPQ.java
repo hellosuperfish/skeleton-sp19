@@ -71,6 +71,7 @@ public class NaiveMinPQ<T> implements ExtrinsicMinPQ<T> {
         private T item;
         private double priority;
 
+
         PriorityNode(T e, double p) {
             this.item = e;
             this.priority = p;
@@ -111,4 +112,6 @@ public class NaiveMinPQ<T> implements ExtrinsicMinPQ<T> {
             return item.hashCode();
         }
     }
+
+
 }
