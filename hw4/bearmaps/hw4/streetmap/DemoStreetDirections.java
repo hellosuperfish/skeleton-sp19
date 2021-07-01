@@ -12,7 +12,7 @@ import bearmaps.hw4.SolutionPrinter;
  */
 public class DemoStreetDirections {
     public static void main(String[] args) {
-        StreetMapGraph smg = StreetMapGraph.readFromSimpleFormat("berkeley-street-data.simple");
+        StreetMapGraph smg = StreetMapGraph.readFromSimpleFormat("/Users/jinghuang/Desktop/JavaLearning/CS61b/skeleton-sp19/hw4/bearmaps/hw4/input/berkeley-street-data.simple");
         AStarSolver<Long> solver = new AStarSolver<>(smg, 2793619975L, 2793619967L, 5);
         SolutionPrinter.summarizeSolution(solver, "->");
     }

@@ -71,7 +71,7 @@ public class SanityTests {
         int goal = 0;
         ShortestPathsSolver<Integer> solver = new AStarSolver<>(wdg, start, goal, 10);
         List<Integer> actual = solver.solution();
-        List<Integer> expected = List.of();
+        List<Integer> expected = null;
         assertEquals(expected, actual);
 
         SolverOutcome actualOutcome = solver.outcome();
