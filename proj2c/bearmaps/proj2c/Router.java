@@ -1,6 +1,12 @@
 package bearmaps.proj2c;
 
+import bearmaps.hw4.WeightedEdge;
+import bearmaps.hw4.WeirdSolver;
+import bearmaps.hw4.streetmap.*;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,10 +30,9 @@ public class Router {
      */
     public static List<Long> shortestPath(AugmentedStreetMapGraph g, double stlon, double stlat,
                                           double destlon, double destlat) {
-        //long src = g.closest(stlon, stlat);
-        //long dest = g.closest(destlon, destlat);
-        //return new WeirdSolver<>(g, src, dest, 20).solution();
-        return null;
+        long src = g.closest(stlon, stlat);
+        long dest = g.closest(destlon, destlat);
+        return new WeirdSolver<>(g, src, dest, 20).solution();
     }
 
     /**
@@ -40,7 +45,68 @@ public class Router {
      */
     public static List<NavigationDirection> routeDirections(AugmentedStreetMapGraph g, List<Long> route) {
         /* fill in for part IV */
-        return null;
+        List<NavigationDirection> directionList = new ArrayList<>();
+        int dirCount = 0;
+        for (int i = 0; i < route.size() - 1; i++) {
+           if(i == 0) {
+               NavigationDirection nd = new NavigationDirection();
+               nd.direction = NavigationDirection.START;
+               nd.way = g.getStreetName(route.get(0), route.get(1));
+               nd.distance = Router.distance(g.lon(route.get(0)), g.lon(route.get(1)), g.lat(route.get(0)), g.lat(route.get(1)));
+               directionList.add(nd);
+           } else {
+             //  public static double bearing(double lonV, double lonW, double latV, double latW)
+               long curVerID = route.get(i);
+               //System.out.println(curVerID);
+               long preVerID = route.get(i-1);
+               long nextVerID = route.get(i+1);
+
+               double curLon = g.lon(curVerID);
+               double curLat = g.lat(curVerID);
+               double prevLon = g.lon(preVerID);
+               double prevLat = g.lat(preVerID);
+               double nextLon = g.lon(nextVerID);
+               double nextLat = g.lat(nextVerID);
+               if (g.getStreetName(preVerID, curVerID).equals(g.getStreetName(curVerID, nextVerID))) {
+                   directionList.get(dirCount).distance += Router.distance(curLon, nextLon, curLat, nextLat);
+               } else {
+                   double prevBearing = NavigationDirection.bearing(prevLon, curLon, prevLat, curLat);
+                   double currBearing = NavigationDirection.bearing(curLon, nextLon, curLat, nextLat);
+                   int direction = NavigationDirection.getDirection(prevBearing, currBearing);
+                   NavigationDirection nd1 = new NavigationDirection();
+                   nd1.direction = direction;
+                   nd1.way = g.getStreetName(curVerID, nextVerID);
+                   nd1.distance += Router.distance(curLon, nextLon, curLat, nextLat);
+                   directionList.add(nd1);
+                   dirCount += 1;
+                   //System.out.println(dirCount + ": " + directionList.get(dirCount).direction);
+               }
+
+           }
+
+        }
+
+        return directionList;
+    }
+
+
+
+    /**
+     * Returns the great-circle (haversine) distance between geographic coordinates
+     * (LATV, LONV) and (LATW, LONW).
+     *
+     * @source Kevin Lowe & Antares Chen, and https://www.movable-type.co.uk/scripts/latlong.html
+     **/
+    private static double distance(double lonV, double lonW, double latV, double latW) {
+        double phi1 = Math.toRadians(latV);
+        double phi2 = Math.toRadians(latW);
+        double dphi = Math.toRadians(latW - latV);
+        double dlambda = Math.toRadians(lonW - lonV);
+
+        double a = Math.sin(dphi / 2.0) * Math.sin(dphi / 2.0);
+        a += Math.cos(phi1) * Math.cos(phi2) * Math.sin(dlambda / 2.0) * Math.sin(dlambda / 2.0);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return 3963 * c;
     }
 
     /**
@@ -164,6 +230,7 @@ public class Router {
          */
         private static int getDirection(double prevBearing, double currBearing) {
             double absDiff = Math.abs(currBearing - prevBearing);
+            //System.out.println(absDiff);
             if (numInRange(absDiff, 0.0, 15.0)) {
                 return NavigationDirection.STRAIGHT;
 

@@ -81,16 +81,158 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
      *                    string. <br>
      * "query_success" : Boolean, whether the query was able to successfully complete; don't
      *                    forget to set this to true on success! <br>
+     * private static final String[] REQUIRED_RASTER_REQUEST_PARAMS = {"ullat", "ullon", "lrlat", "lrlon", "w", "h"};
+     * private static final String[] REQUIRED_RASTER_RESULT_PARAMS = {"render_grid", "raster_ul_lon",
+     *             "raster_ul_lat", "raster_lr_lon", "raster_lr_lat", "depth", "query_success"};
      */
     @Override
     public Map<String, Object> processRequest(Map<String, Double> requestParams, Response response) {
         //System.out.println("yo, wanna know the parameters given by the web browser? They are:");
         //System.out.println(requestParams);
         Map<String, Object> results = new HashMap<>();
-        System.out.println("Since you haven't implemented RasterAPIHandler.processRequest, nothing is displayed in "
-                + "your browser.");
+        boolean querySuccess = getCoverage(requestParams);
+        results.put("query_success", querySuccess);
+        if (!querySuccess) {
+            for (String s : REQUIRED_RASTER_RESULT_PARAMS) {
+                if (s != "query_success") {
+                    results.put(s, null);
+                }
+            }
+        }
+        double LonDPP = (requestParams.get("lrlon") - requestParams.get("ullon")) / requestParams.get("w");
+        int depth = getDepth(LonDPP);
+        int lx = getLX(requestParams.get("ullon"), depth);
+        int uy = getUY(requestParams.get("ullat"), depth);
+        int rx = getRX(requestParams.get("lrlon"), depth);
+        int ly = getLY(requestParams.get("lrlat"), depth);
+
+        int gridWidth = rx - lx + 1;
+        int gridHeight = ly - uy + 1;
+
+        String[][] grid = new String[gridHeight][gridWidth];
+
+        for (int i = 0; i < gridHeight; i++) {
+            for (int j = 0; j < gridWidth; j++) {
+                int x = j + lx;
+                int y = i + uy;
+                grid[i][j] = "d" + depth + "_x" + x + "_y" + y + ".png";
+            }
+        }
+
+        double[] rasterCoord = getRasterCoord(lx, uy, rx, ly, depth);
+
+        results.put("render_grid", grid);
+        results.put("raster_ul_lon", rasterCoord[0]);
+        results.put("raster_ul_lat", rasterCoord[1]);
+        results.put("raster_lr_lon", rasterCoord[2]);
+        results.put("raster_lr_lat", rasterCoord[3]);
+        results.put("depth", depth);
+
+        //System.out.println("Since you haven't implemented RasterAPIHandler.processRequest, nothing is displayed in "
+          //      + "your browser.");
         return results;
     }
+
+    private static boolean getCoverage(Map<String, Double> requestParams) {
+        if (requestParams.isEmpty()) {
+            return false;
+        }
+        if (requestParams.get("lrlon") < -122.2998046875 || requestParams.get("lrlat") > 37.892195547244356 ||
+            requestParams.get("ullon") > -122.2119140625 || requestParams.get("ullat") < 37.82280243352756) {
+            return false;
+        }
+        return true;
+    }
+
+    private static int getDepth(double lonDpp) {
+        for(int i = 0; i <= 7; i++) {
+            double DPP = ((-122.2119140625 + 122.2998046875) / (256 * (Math.pow(2, i))));
+            if (DPP <= lonDpp) {
+                return i;
+            }
+        }
+        return 7;
+    }
+
+    private static int getLX(double ullon, int depth) {
+        int value = 0;
+        double unit = (-122.2119140625 + 122.2998046875) / (Math.pow(2, depth));
+        if (depth == 0 || ullon <= -122.2998046875) {
+            return 0;
+        }
+        for(int i = 1; i <= (Math.pow(2, depth)); i++) {
+            double LX = -122.2998046875 + (i * unit);
+            if (ullon >= LX) {
+                value = i;
+            }
+        }
+        return value;
+    }
+
+    private static int getUY(double ullat, int depth) {
+        int value = 0;
+        double unit = (37.892195547244356 - 37.82280243352756) / (Math.pow(2, depth));
+        if (depth == 0 || ullat >= 37.892195547244356) {
+            return 0;
+        }
+        for(int i = 1; i <= (Math.pow(2, depth)); i++) {
+            double UY = 37.892195547244356 - (i * unit);
+            if (ullat <= UY) {
+                value = i;
+            }
+        }
+        return value;
+    }
+
+    private static int getRX(double lrlon, int depth) {
+        int value = 0;
+        double unit = (-122.2119140625 + 122.2998046875) / (Math.pow(2, depth));
+        if (depth == 0) {
+            return 0;
+        }
+        if (lrlon > -122.2119140625) {
+            return depth;
+        }
+        for(int i = 1; i <= (Math.pow(2, depth)); i++) {
+            double LX = -122.2998046875 + (i * unit);
+            if (lrlon >= LX) {
+                value = i;
+            }
+        }
+        return value;
+    }
+
+    private static int getLY(double lrlat, int depth) {
+        int value = 0;
+        double unit = (37.892195547244356 - 37.82280243352756) / (Math.pow(2, depth));
+        if (depth == 0) {
+            return 0;
+        }
+        if (lrlat < 37.82280243352756) {
+            return depth;
+        }
+        for(int i = 1; i <= (Math.pow(2, depth)); i++) {
+            double LY = 37.892195547244356 - (i * unit);
+            if (lrlat <= LY) {
+                value = i;
+            }
+        }
+        return value;
+    }
+
+    private static double[] getRasterCoord(int lx, int uy, int rx, int ly, int depth) {
+        double[] rasterCoord = new double[4];
+        double xUnit = (-122.2119140625 + 122.2998046875) / (Math.pow(2, depth));
+        double yUnit = (37.892195547244356 - 37.82280243352756) / (Math.pow(2, depth));
+
+        rasterCoord[0] = -122.2998046875 + lx * xUnit;
+        rasterCoord[1] = 37.892195547244356 - uy * yUnit;
+        rasterCoord[2] = -122.2998046875 + (rx + 1) * xUnit;
+        rasterCoord[3] = 37.892195547244356 - (ly + 1) * yUnit;
+
+        return rasterCoord;
+    }
+
 
     @Override
     protected Object buildJsonResponse(Map<String, Object> result) {
